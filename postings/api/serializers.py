@@ -14,7 +14,7 @@ class BlogPostSerializer(serializers.ModelSerializer): # forms.ModelForm
             'timestamp',
         ]
         read_only_fields = ['user']
-    
+
     # converts to JSON
     # validations for data passed
 
