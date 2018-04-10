@@ -70,14 +70,56 @@ class BlogPostAPITestCase(APITestCase):
     def test_update_item_with_user(self):
         # test the get list item
         blog_post = BlogPost.objects.first()
-        print(blog_post.content)
+        #print(blog_post.content)
         url = blog_post.get_api_url()
         data = {"title": "some random title", "content": "some more content"}
         user_obj = User.objects.first()
         payload = payload_handler(user_obj)
         token_rsp = encode_handler(payload)
         self.client.credentials(HTTP_AUTHORIZATION='JWT ' + token_rsp) # JWT <token>
-
         response = self.client.put(url, data, format='json')
-        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+        self.assertEqual(response.status_code, status.HTTP_405_METHOD_NOT_ALLOWED)
+        #print(response.data)
+
+    def test_post_item_with_user(self):
+        # test the get list item
+        user_obj = User.objects.first()
+        payload = payload_handler(user_obj)
+        token_rsp = encode_handler(payload)
+        self.client.credentials(HTTP_AUTHORIZATION='JWT ' + token_rsp) # JWT <token>
+        data = {"title": "some random title", "content": "some more content"}
+        url = api_reverse("api-postings:post-listcreate")
+        response = self.client.post(url, data, format='json')
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+
+    def test_post_user_ownership(self):
+        # test the get list item
+        owner = User.objects.create(username='test2222')
+        blog_post = BlogPost.objects.create(
+                user=owner,
+                title='New Title',
+                content='some_random_content',
+            )
+        user_obj    = User.objects.first()
+        self.assertNotEqual(user_obj.username, owner.username)
+
+        payload     = payload_handler(user_obj)
+        token_rsp   = encode_handler(payload)
+        self.client.credentials(HTTP_AUTHORIZATION='JWT ' + token_rsp) # JWT <token>
+        
+        url = blog_post.get_api_url()
+        data = {"title": "some random title", "content": "some more content"}
+        response = self.client.put(url, data, format='json')
+        self.assertEqual(response.status_code, status.HTTP_405_METHOD_NOT_ALLOWED)
+
+    def test_user_login(self):
+        data = {
+            'username': 'test',
+            'password': 'pass1234',
+        }
+        url = api_reverse("api-login")
+        response = self.client.post(url, data)
         print(response.data)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+# request.post(url, data, headers={"Authorization": "JWT " + <token> })
