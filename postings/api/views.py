@@ -27,6 +27,9 @@ class BlogPostAPIView(mixins.CreateModelMixin, generics.ListAPIView): # DetailVi
     
     def post(self, request, *args, **kwargs):
         return self.create(request, *args, **kwargs)
+    
+    def get_serializer_context(self, *args, **kwargs):
+        return {"request": self.request}
 
 
 class BlogPostRudView(generics.RetrieveUpdateDestroyAPIView): # DetailView CreateView FormView

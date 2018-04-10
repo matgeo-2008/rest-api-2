@@ -22,5 +22,5 @@ class BlogPost(models.Model):
     # def get_absolute_url(self):
     #     return reverse("api:postings:post-rud", kwargs={'pk': self.pk}) '/api/postings/1
 
-    def get_api_url(self):
-        return api_reverse("api-postings:post-rud", kwargs={'pk': self.pk})
+    def get_api_url(self, request=None):
+        return api_reverse("api-postings:post-rud", kwargs={'pk': self.pk}, request=request)
