@@ -1,13 +1,13 @@
+from rest_framework import status
 from rest_framework.test import APITestCase
-from django.contrib.auth import get_user_model
 
 from rest_framework_jwt.settings import api_settings
 
 payload_handler = api_settings.JWT_PAYLOAD_HANDLER
 encode_handler = api_settings.JWT_ENCODE_HANDLER
 
+from django.contrib.auth import get_user_model
 from rest_framework.reverse import reverse as api_reverse
-from rest_framework import status
 
 # automated
 # new / blank db
@@ -112,7 +112,7 @@ class BlogPostAPITestCase(APITestCase):
         response = self.client.put(url, data, format='json')
         self.assertEqual(response.status_code, status.HTTP_405_METHOD_NOT_ALLOWED)
 
-    def test_user_login(self):
+    def test_user_login_and_update(self):
         data = {
             'username': 'test',
             'password': 'pass1234',
@@ -121,5 +121,13 @@ class BlogPostAPITestCase(APITestCase):
         response = self.client.post(url, data)
         print(response.data)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
+        token = response.data.get("token")
+        if token is not None:
+            blog_post = BlogPost.objects.first()
+            url = blog_post.get_api_url()
+            data = {"title": "some random title", "content": "some more content"}
+            self.client.credentials(HTTP_AUTHORIZATION='JWT ' + token) # JWT <token>
+            response = self.client.put(url, data, format='json')
+            self.assertEqual(response.status_code, status.HTTP_405_METHOD_NOT_ALLOWED)
 
 # request.post(url, data, headers={"Authorization": "JWT " + <token> })
